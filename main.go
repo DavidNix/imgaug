@@ -73,10 +73,11 @@ func main() {
 	var (
 		total int64
 		wg    sync.WaitGroup
+		cpus  = runtime.NumCPU()
 	)
 
-	wg.Add(runtime.NumCPU())
-	for i := 0; i < runtime.NumCPU(); i++ {
+	wg.Add(cpus)
+	for i := 0; i < cpus; i++ {
 		go func() {
 			subtotal := (&aug.Transformer{Dir: destDir}).Augment(ch)
 			atomic.AddInt64(&total, subtotal)
