@@ -7,6 +7,9 @@ import (
 	"github.com/DavidNix/imgaug/aug"
 	"os"
 	"path/filepath"
+	"runtime"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -57,31 +60,43 @@ func main() {
 		exit(err)
 	}
 
-	destDir, err := validateDirectories(cfg)
+	destDir, err := buildDestination(cfg)
 	if err != nil {
 		exit(err)
 	}
 
-	srcCh, err := aug.EmitSourceImages(cfg.SourceDir)
+	ch, err := aug.EmitSourceImages(cfg.SourceDir)
 	if err != nil {
 		exit(err)
 	}
 
-	for range srcCh {
-		fmt.Println("got image!")
+	var (
+		total int64
+		wg    sync.WaitGroup
+	)
+
+	wg.Add(runtime.NumCPU())
+	for i := 0; i < runtime.NumCPU(); i++ {
+		go func() {
+			subtotal := (&aug.Transformer{Dir: destDir}).Augment(ch)
+			atomic.AddInt64(&total, subtotal)
+			wg.Done()
+		}()
 	}
 
-	fmt.Println("augmented images saved to", destDir)
+	wg.Wait()
+
+	fmt.Printf("%d augmented images saved to %s\n", total, destDir)
 }
 
-func validateDirectories(cfg config) (string, error) {
+func buildDestination(cfg config) (string, error) {
 	_, err := os.Stat(cfg.SourceDir)
 	if err != nil {
 		return "", err
 	}
 
 	dest := filepath.Join(cfg.SourceDir, fmt.Sprintf("augmented-%d", time.Now().Unix()))
-	err = os.MkdirAll(dest, 0666)
+	err = os.MkdirAll(dest, 0776)
 	if err != nil {
 		return "", err
 	}

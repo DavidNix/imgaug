@@ -7,4 +7,7 @@ require (
 	github.com/pkg/errors v0.9.1
 )
 
-require golang.org/x/image v0.0.0-20220302094943-723b81ca9867 // indirect
+require (
+	github.com/google/uuid v1.3.0 // indirect
+	golang.org/x/image v0.0.0-20220302094943-723b81ca9867 // indirect
+)
