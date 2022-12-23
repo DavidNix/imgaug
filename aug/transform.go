@@ -1,14 +1,15 @@
 package aug
 
 import (
+	"image"
+	"path/filepath"
+
 	"github.com/anthonynsimon/bild/adjust"
 	"github.com/anthonynsimon/bild/effect"
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"image"
-	"path/filepath"
 )
 
 type Transformer struct {
@@ -56,16 +57,4 @@ func (tf *Transformer) savePNG(img image.Image) {
 		return
 	}
 	tf.total++
-}
-
-func (tf *Transformer) adjustBrightness(img image.Image) {
-	for _, v := range []float64{-0.3, -0.15, 0.15, 0.3} {
-		tf.savePNG(adjust.Brightness(img, v))
-	}
-}
-
-func (tf *Transformer) adjustContrast(img image.Image) {
-	for _, v := range []float64{-0.3, -0.15, 0.15, 0.3} {
-		tf.savePNG(adjust.Contrast(img, v))
-	}
 }
